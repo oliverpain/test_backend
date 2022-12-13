@@ -1,0 +1,25 @@
+{
+  "name": "cacher",
+  "version": "1.0.0",
+  "description": "caching server backend controller",
+  "main": "index.js",
+  "scripts": {
+    "start": "pm2-dev start index.js",
+    "watch": "npm-watch"
+  },
+  "watch": {
+    "build": {
+      "patterns": [
+        "src"
+      ],
+      "extensions": "js,jsx"
+    }
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/hapi": "^21.1.0",
+    "js-yaml": "^4.1.0",
+    "npm-watch": "^0.11.0"
+  }
+}
