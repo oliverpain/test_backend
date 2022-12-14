@@ -1,0 +1,19 @@
+POST http://127.0.0.1:3000/volume  HTTP/1.1
+content-type: application/json
+
+{
+    "/NET/3D5": {
+        "host": "testumlo222",
+        "path": "/SHARE2"
+    }
+}
+
+
+###
+
+
+GET http://127.0.0.1:3000/volumes/get HTTP/1.1
+
+###
+
+GET http://127.0.0.1:3000/configuration/dbSave HTTP/1.1
