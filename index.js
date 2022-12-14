@@ -7,6 +7,7 @@ const util = require('util');
 const { exec } = require('child_process');
 const  mongo = require('mongodb');
 const url = "mongodb://127.0.0.1:27017/";
+var cors = require('cors');
 
 const loadConfiguration = function(){
     const doc = yaml.load(fs.readFileSync('c:/temp/config.yaml', 'utf8'));
@@ -15,12 +16,17 @@ const loadConfiguration = function(){
 
 const init = async () => {
 
-    const serverconfig = loadConfiguration();
+    var serverconfig = loadConfiguration();
 
     console.log(serverconfig);
     const server = Hapi.server({
         port: 3000,
-        host: '127.0.0.1'
+        host: '127.0.0.1',
+        routes: {
+            cors: {
+                "origin": ["*"],
+            },
+        }
     });
 
     server.route({
@@ -28,7 +34,7 @@ const init = async () => {
         path: '/',
         handler: (request, h) => {
 
-            let result = exec('ls -lh', (error, stdout, stderr) => {
+            let result = exec('dir', (error, stdout, stderr) => {
                 if (error) {
                   console.error(`error: ${error.message}`);
                   return;
@@ -117,12 +123,46 @@ const init = async () => {
         }
     })
     server.route({
+        method: 'GET',
+        path: '/exports/get',
+        handler: (request, h) => {
+            try {
+                return(JSON.stringify(serverconfig.config.exports));
+              } catch (e) {
+                console.log(e);
+              }
+              return 'get exports';
+        }
+    })
+    server.route({
+        method: 'POST',
+        path: '/export',
+        handler: (request, h) => {
+            try {
+                console.log(request.payload);
+                console.log(typeof serverconfig.config.volumes);
+                Object.entries(request.payload).forEach(entry => {
+                    const [key, value] = entry;
+                    serverconfig.config.exports[key] = value;
+                    console.log(key, value);
+                  });
+                // Object.forEach(request.payload){
+
+                // }
+                // serverconfig.config.volumes.push(request.payload);
+              } catch (e) {
+                console.log(e);
+              }
+              return 'path added';
+        }
+    })
+    server.route({
         method: 'POST',
         path: '/volume',
         handler: (request, h) => {
             try {
                 console.log(request.payload);
-                console.log(typeof serverconfig.config.volumes);
+                console.log("data^^")
                 Object.entries(request.payload).forEach(entry => {
                     const [key, value] = entry;
                     serverconfig.config.volumes[key] = value;
