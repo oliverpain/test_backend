@@ -3,7 +3,7 @@ content-type: application/json
 
 {
     "/NET/3D5": {
-        "host": "testumlo222",
+        "host": "testumlo3333",
         "path": "/SHARE2"
     }
 }
@@ -16,4 +16,26 @@ GET http://127.0.0.1:3000/volumes/get HTTP/1.1
 
 ###
 
+
+GET http://127.0.0.1:3000/configuration/load HTTP/1.1
+
+###
+
 GET http://127.0.0.1:3000/configuration/dbSave HTTP/1.1
+
+###
+
+GET http://127.0.0.1:3000/exports/get HTTP/1.1
+
+###
+
+POST http://127.0.0.1:3000/export HTTP/1.1
+content-type: application/json
+
+{
+  "/QTGEN44444": {
+    "hosts_allowed": "*",
+    "options": "ro,wdelay,no_root_squash,no_subtree_check,fsid=13,sec=sys,rw,secure,no_root_squash,no_all_squash",
+    "active": true
+  }
+}
