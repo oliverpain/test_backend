@@ -4,6 +4,9 @@ const Hapi = require('@hapi/hapi');
 const fs = require('fs');
 const yaml = require('js-yaml');
 const util = require('util');
+const { exec } = require('child_process');
+const  mongo = require('mongodb');
+const url = "mongodb://127.0.0.1:27017/";
 
 const loadConfiguration = function(){
     const doc = yaml.load(fs.readFileSync('c:/temp/config.yaml', 'utf8'));
@@ -12,11 +15,12 @@ const loadConfiguration = function(){
 
 const init = async () => {
 
-    let serverconfig = loadConfiguration();
+    const serverconfig = loadConfiguration();
+
     console.log(serverconfig);
     const server = Hapi.server({
         port: 3000,
-        host: 'localhost'
+        host: '127.0.0.1'
     });
 
     server.route({
@@ -24,8 +28,22 @@ const init = async () => {
         path: '/',
         handler: (request, h) => {
 
-            return 'Hello World!';
-        }
+            let result = exec('ls -lh', (error, stdout, stderr) => {
+                if (error) {
+                  console.error(`error: ${error.message}`);
+                  return;
+                }
+              
+                if (stderr) {
+                  console.error(`stderr: ${stderr}`);
+                  return;
+                }
+              
+                console.log(`stdout:\n${stdout}`);
+              });        
+              return result;
+            }
+
     });
 
     server.route({
@@ -58,11 +76,62 @@ const init = async () => {
         }
     })
     server.route({
-        method: 'POST',
-        path: '/volume/add/{volume_path}',
+        method: 'GET',
+        path: '/configuration/dbSave',
+        handler: (request, h) => {
+                try {
+                    const monClient = new mongo.MongoClient(url);
+                    var dbo = monClient.db("cacheServer");
+                        dbo.collection("configs").findOneAndUpdate(
+                            {"name": "config"},
+                            {$set:{"config":serverconfig.config}},
+                            {upsert: true}
+                           ).then(function(err, value) {
+
+                                    if (err) throw err;
+                                    console.log("1 document inserted", value);
+                                    //monClient.close();
+                               });
+                        // dbo.collection("configs").insertOne(config, (err, monClient) => {
+                        //     if (err) throw err;
+                        //     console.log("1 document inserted");
+                        //     //monClient.close();
+                        // });
+                
+              } catch (e) {
+                console.log(e);
+              }
+              return 'File saved';
+            }
+    }),
+    server.route({
+        method: 'GET',
+        path: '/volumes/get',
         handler: (request, h) => {
             try {
-                serverconfig.config.volumes.push(request.params.volume_path);
+                return(JSON.stringify(serverconfig.config.volumes));
+              } catch (e) {
+                console.log(e);
+              }
+              return 'path added';
+        }
+    })
+    server.route({
+        method: 'POST',
+        path: '/volume',
+        handler: (request, h) => {
+            try {
+                console.log(request.payload);
+                console.log(typeof serverconfig.config.volumes);
+                Object.entries(request.payload).forEach(entry => {
+                    const [key, value] = entry;
+                    serverconfig.config.volumes[key] = value;
+                    console.log(key, value);
+                  });
+                // Object.forEach(request.payload){
+
+                // }
+                // serverconfig.config.volumes.push(request.payload);
               } catch (e) {
                 console.log(e);
               }
